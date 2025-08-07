@@ -1,0 +1,6 @@
+{
+  "buildCommand": "cd leaderboard-frontend && npm install && npm run build",
+  "outputDirectory": "leaderboard-frontend/build",
+  "installCommand": "cd leaderboard-frontend && npm install",
+  "framework": "create-react-app"
+} 
