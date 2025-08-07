@@ -1,0 +1,15 @@
+{
+  "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.859.0",
+    "@aws-sdk/client-dynamodb": "^3.359.0",
+    "@aws-sdk/lib-dynamodb": "^3.359.0",
+    "@aws-sdk/client-apigatewaymanagementapi": "^3.359.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.2.0",
+    "@types/aws-lambda": "^8.10.119",
+    "serverless-dotenv-plugin": "^5.0.0",
+    "serverless-esbuild": "^1.55.1",
+    "esbuild": "^0.21.2"
+  }
+}

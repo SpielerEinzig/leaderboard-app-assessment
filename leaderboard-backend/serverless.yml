@@ -1,0 +1,148 @@
+# Serverless YAML focused solely on deploying Lambda functions; Cognito is expected
+# to be pre-existing. The necessary Cognito values are provided via .env files and
+# loaded by serverless-dotenv-plugin.
+
+org: spielereinzig
+app: leaderboard-app
+service: leaderboard-backend
+
+plugins:
+  - serverless-dotenv-plugin # loads .env.[stage] into Lambda env vars
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-east-1'}
+
+  # HTTP API CORS configuration
+  httpApi:
+    cors: true
+
+  # Environment variables shared by every Lambda. Values come from the host
+  # environment / .env, NOT CloudFormation.
+  # environment:
+  #   AWS_REGION: ${env:AWS_REGION, self:provider.region}
+  #   COGNITO_CLIENT_ID: ${env:COGNITO_CLIENT_ID}
+  #   COGNITO_CLIENT_SECRET: ${env:COGNITO_CLIENT_SECRET, ''}
+
+  # IAM permissions allowing the Lambdas to interact with your PRE-EXISTING
+  # Cognito User Pool.
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - cognito-idp:SignUp
+        - cognito-idp:ConfirmSignUp
+        - cognito-idp:ResendConfirmationCode
+        - cognito-idp:InitiateAuth
+        - cognito-idp:ForgotPassword
+        - cognito-idp:ConfirmForgotPassword
+        - cognito-idp:ChangePassword
+        - cognito-idp:GetUser
+        - cognito-idp:UpdateUserAttributes
+        - cognito-idp:DeleteUser
+        - dynamodb:PutItem
+        - dynamodb:Scan
+      Resource: "*"
+
+# ---------------- Function Definitions ----------------
+functions:
+  signup:
+    handler: src/functions/auth/signup.handler
+    events:
+      - httpApi:
+          method: post
+          path: /auth/signup
+
+  confirm:
+    handler: src/functions/auth/confirm.handler
+    events:
+      - httpApi:
+          method: post
+          path: /auth/confirm
+
+  resendConfirmationCode:
+    handler: src/functions/auth/resendConfirmationCode.handler
+    events:
+      - httpApi:
+          method: post
+          path: /auth/resend-confirmation
+
+  login:
+    handler: src/functions/auth/login.handler
+    events:
+      - httpApi:
+          method: post
+          path: /auth/login
+
+  refreshToken:
+    handler: src/functions/auth/refreshToken.handler
+    events:
+      - httpApi:
+          method: post
+          path: /auth/refresh-token
+
+  forgotPassword:
+    handler: src/functions/auth/forgotPassword.handler
+    events:
+      - httpApi:
+          method: post
+          path: /auth/forgot-password
+
+  resetPassword:
+    handler: src/functions/auth/resetPassword.handler
+    events:
+      - httpApi:
+          method: post
+          path: /auth/reset-password
+
+  changePassword:
+    handler: src/functions/auth/changePassword.handler
+    events:
+      - httpApi:
+          method: post
+          path: /auth/change-password
+
+  getUser:
+    handler: src/functions/auth/getUser.handler
+    events:
+      - httpApi:
+          method: get
+          path: /auth/me
+
+  updateProfile:
+    handler: src/functions/auth/updateProfile.handler
+    events:
+      - httpApi:
+          method: put
+          path: /auth/update-profile
+
+  deleteUser:
+    handler: src/functions/auth/deleteUser.handler
+    events:
+      - httpApi:
+          method: delete
+          path: /auth/delete
+
+  submitScore:
+    handler: src/functions/scores/submitScore.handler
+    events:
+      - httpApi:
+          method: post
+          path: /scores
+
+  fetchScores:
+    handler: src/functions/scores/fetchScores.handler
+    events:
+      - httpApi:
+          method: get
+          path: /scores/top
+
+# ---------------- esbuild settings ----------------
+custom:
+  esbuild:
+    bundle: true
+    minify: true
+    target: node20
+    platform: node
+    concurrency: 10
